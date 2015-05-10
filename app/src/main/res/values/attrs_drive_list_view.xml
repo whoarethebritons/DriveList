@@ -1,0 +1,5 @@
+<resources>
+    <declare-styleable name="DriveListView">
+        <attr name="arrIndex" format="integer"/>
+    </declare-styleable>
+</resources>
