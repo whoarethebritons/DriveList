@@ -14,7 +14,7 @@ import android.widget.*;
 import java.util.ArrayList;
 
 
-public class NewList extends ListActivity {
+public class NewList extends ActionBarActivity {
     private class ViewHolder {
         private EditText mText;
         private CheckBox mCheckBox;
@@ -34,11 +34,12 @@ public class NewList extends ListActivity {
             TaskItem newItem = new TaskItem(false, "New Item" + i);
             taskArray.add(newItem);
         }
-        //LinearLayout listLayout = (LinearLayout) View.inflate(this, R.layout.activity_new_list, null);
+        LinearLayout listLayout = (LinearLayout) View.inflate(this, R.layout.activity_new_list, null);
+        ListView lv = (ListView) listLayout.findViewById(android.R.id.list);
         adapter= new TaskAdapter(this,
                 R.layout.check_list, R.id.nameView, taskArray);
-        setListAdapter(adapter);
-        setContentView(R.layout.activity_new_list);
+        lv.setAdapter(adapter);
+        setContentView(listLayout);
 
     }
 
