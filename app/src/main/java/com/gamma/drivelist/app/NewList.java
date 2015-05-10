@@ -10,7 +10,11 @@ import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 import android.widget.*;
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
 
+import java.io.File;
+import java.io.StringWriter;
 import java.util.ArrayList;
 
 
@@ -22,7 +26,6 @@ public class NewList extends ActionBarActivity {
     private class IndexHolder {
         private int listIndex;
     }
-
     ArrayList<TaskItem> taskArray = new ArrayList();
     ArrayAdapter adapter;
 
@@ -155,7 +158,6 @@ public class NewList extends ActionBarActivity {
 
                     for(int j=0; j < taskArray.size(); j++) {
                         TaskItem m = taskArray.get(j);
-                        Log.d("editing", m.getmTaskItem() + "" + m);
                     }
                     return true;
                 } else {
@@ -188,11 +190,18 @@ public class NewList extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    public boolean commitChanges() {
-        for(int i=0; i < adapter.getCount(); i++) {
-            //to be continued...
+    public void commitChanges(View v) {
+        Serializer serializer = new Persister();
+        for(TaskItem t : taskArray) {
+            //StringWriter sw = new StringWriter();
+            File result = new File("example.xml");
+            try {
+                serializer.write(t, result);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        return false;
+        //return false;
     }
     public void addItem(View view) {
         taskArray.add((new TaskItem(false, "New Item")));
@@ -202,8 +211,13 @@ public class NewList extends ActionBarActivity {
     public void onCheckBoxClicked(View v) {
         CheckBox cb = (CheckBox) v;
         IndexHolder vh = (IndexHolder) v.getTag();
-        taskArray.get(vh.listIndex).setmChecked(cb.isChecked());
+        TaskItem done = taskArray.get(vh.listIndex);
+        done.setmChecked(cb.isChecked());
+
+        taskArray.remove(done);
+        taskArray.add(done);
+
         //testing
-        Log.d("editing", cb.isChecked() + " " + taskArray.get(vh.listIndex).mChecked);
+        Log.d("editing", cb.isChecked() + " " + done.mChecked);
     }
 }
