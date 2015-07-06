@@ -7,7 +7,6 @@ import android.widget.EditText;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
-import org.xmlpull.v1.XmlSerializer;
 
 import java.io.StringWriter;
 

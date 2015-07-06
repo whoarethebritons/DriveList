@@ -13,8 +13,7 @@ import android.widget.*;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
-import java.io.File;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.ArrayList;
 
 
@@ -22,12 +21,26 @@ public class NewList extends ActionBarActivity {
     private class ViewHolder {
         private EditText mText;
         private CheckBox mCheckBox;
+        private Button mButton;
     }
     private class IndexHolder {
         private int listIndex;
     }
-    ArrayList<TaskItem> taskArray = new ArrayList();
+    private class Separator {
+        private Button mButton;
+        public Separator(Context c) {
+            mButton = new Button(c);
+            mButton.setText("Add Item");
+        }
+        public View getButton() {
+            return mButton;
+        }
+    }
+
+    ArrayList taskArray = new ArrayList();
     ArrayAdapter adapter;
+    Separator add;
+    int separatorPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +50,17 @@ public class NewList extends ActionBarActivity {
             TaskItem newItem = new TaskItem(false, "New Item" + i);
             taskArray.add(newItem);
         }
+        add = new Separator(this);
+        add.mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addItem(v);
+            }
+        });
+        separatorPosition = 20;
+        //taskArray.add(add);
+        //separatorPosition = taskArray.indexOf(add);
+        //System.out.println(separatorPosition);
         LinearLayout listLayout = (LinearLayout) View.inflate(this, R.layout.activity_new_list, null);
         ListView lv = (ListView) listLayout.findViewById(android.R.id.list);
         adapter= new TaskAdapter(this,
@@ -46,10 +70,10 @@ public class NewList extends ActionBarActivity {
 
     }
 
-    public class TaskAdapter extends ArrayAdapter<String> {
-        //int pos;
+    public class TaskAdapter extends ArrayAdapter {
 
-        public ArrayList<TaskItem> mAdapt;
+
+        public ArrayList mAdapt;
         ArrayAdapter self;
         ViewHolder mHolder;
         IndexHolder mIndex;
@@ -60,14 +84,14 @@ public class NewList extends ActionBarActivity {
             self = this;
         }
 
-        public TaskItem getInArr(int position) {
-            return (TaskItem)mAdapt.get(position);
+        public Object getInArr(int position) {
+            return mAdapt.get(position);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View v = convertView;
-            TaskItem moving;
+            Object mMoving;
 
             if (v == null) {
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -77,37 +101,51 @@ public class NewList extends ActionBarActivity {
             mIndex = new IndexHolder();
 
 
-            moving = (TaskItem) self.getItem(position);
-            mIndex.listIndex = taskArray.indexOf(moving);
+            mMoving = self.getItem(position);
+            mIndex.listIndex = taskArray.indexOf(mMoving);
+            System.out.println(mIndex.listIndex);
 
-
-
-            mHolder.mText = (EditText) v.findViewById(R.id.nameView);
-            if(mHolder.mText == null) {Log.d("editing", "there we go");}
-            mHolder.mText.setOnEditorActionListener(editing);
-            mHolder.mText.setText(moving.getmContent());
-            mHolder.mText.setTag(mIndex);
-
-
-            mHolder.mText.setOnFocusChangeListener(focusIng);
-
-            //we need to update adapter once we finish with editing
-
-            if(mHolder.mText.getOnFocusChangeListener() == focusIng) {
-                Log.d("editing", "successfully added focus listener");
+            /*if(mIndex.listIndex == separatorPosition) {
+                Separator buttonHolder = ((Separator) mMoving);//.getButton();
+                Log.i("button", "I think I'm at " + mIndex.listIndex);
+                //buttonHolder.setTag(mIndex);
+                v = buttonHolder.getButton();
+                v.setTag(buttonHolder);
             }
-            Log.d("editing", "added listener");
+            else {*/
+                TaskItem moving = (TaskItem) mMoving;
+                mHolder.mText = (EditText) v.findViewById(R.id.nameView);
+                mHolder.mCheckBox = (CheckBox) v.findViewById(R.id.checkBox);
+                mHolder.mButton = (Button) v.findViewById(R.id.imageButton);
+                if (mHolder.mText == null && mHolder.mCheckBox == null) {
+                    mHolder.mText = new EditText(getContext());
+                    Log.d("editing", "there we go");
+                    mHolder.mCheckBox = new CheckBox(getContext());
+                    mHolder.mButton = new Button((getContext()));
+                }
+                mHolder.mText.setOnEditorActionListener(editing);
+                mHolder.mText.setText(moving.getmContent());
+                mHolder.mText.setTag(mIndex);
 
-            mHolder.mCheckBox = (CheckBox) v.findViewById(R.id.checkBox);
-            Log.d("editing", mHolder.toString());
+
+                mHolder.mText.setOnFocusChangeListener(focusIng);
+
+                //we need to update adapter once we finish with editing
+
+                if (mHolder.mText.getOnFocusChangeListener() == focusIng) {
+                    Log.d("editing", "successfully added focus listener");
+                }
+                Log.d("editing", "added listener");
+
+                Log.d("editing", mHolder.toString());
 
                 mHolder.mCheckBox.setChecked(moving.mChecked);
-            mHolder.mCheckBox.setTag(mIndex);
+                mHolder.mCheckBox.setTag(mIndex);
+                mHolder.mButton.setTag(mIndex);
                 v.setTag(mHolder);
+            //}
             return v;
         }
-
-
 
         private EditText.OnFocusChangeListener focusIng = new EditText.OnFocusChangeListener() {
 
@@ -133,7 +171,7 @@ public class NewList extends ActionBarActivity {
             int arrIndex = vh.listIndex;
 
             //gets item at index
-            TaskItem i = getInArr(arrIndex);
+            TaskItem i = (TaskItem) getInArr(arrIndex);
             //make sure they are not the same
             if(! et.getText().toString().equals(i.getmContent())) {
                 //et.setText(v.getText());
@@ -156,9 +194,9 @@ public class NewList extends ActionBarActivity {
                         (event.getAction() == KeyEvent.ACTION_DOWN)) {
                     editItem(v);
 
-                    for(int j=0; j < taskArray.size(); j++) {
-                        TaskItem m = taskArray.get(j);
-                    }
+                    /*for(int j=0; j < taskArray.size(); j++) {
+                        TaskItem m = (TaskItem)taskArray.get(j);
+                    }*/
                     return true;
                 } else {
                     Log.d("editing", "and you fail");
@@ -190,32 +228,63 @@ public class NewList extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    public void commitChanges(View v) {
+    public void commitChanges(MenuItem item) {
         Serializer serializer = new Persister();
-        for(TaskItem t : taskArray) {
+        for(Object o : taskArray) {
+            TaskItem t = (TaskItem) o;
             //StringWriter sw = new StringWriter();
-            File result = new File("example.xml");
             try {
-                serializer.write(t, result);
-            } catch (Exception e) {
+                FileOutputStream fos = openFileOutput("example", Context.MODE_PRIVATE);
+
+                serializer.write(t, fos);
+                readFile("example");
+            }catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+             catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        //return false;
     }
+    public void readFile(String name) {
+        try {
+            FileInputStream fis = openFileInput(name);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            String in = br.readLine();
+            while(in != null) {
+                Log.d("xml", in);
+                in = br.readLine();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public void addItem(View view) {
-        taskArray.add((new TaskItem(false, "New Item")));
+        ViewSwitcher vs  = (ViewSwitcher) findViewById(R.id.viewSwitcher);
+        taskArray.add(separatorPosition, (new TaskItem(false, "New Item")));
+        separatorPosition++;
+        System.out.println(separatorPosition);
+        vs.showNext();
         adapter.notifyDataSetChanged();
     }
 
     public void onCheckBoxClicked(View v) {
         CheckBox cb = (CheckBox) v;
         IndexHolder vh = (IndexHolder) v.getTag();
-        TaskItem done = taskArray.get(vh.listIndex);
+        TaskItem done = (TaskItem)taskArray.get(vh.listIndex);
         done.setmChecked(cb.isChecked());
 
+        //move to bottom
         taskArray.remove(done);
-        taskArray.add(done);
+        //moves to underneath separator
+        taskArray.add(separatorPosition + 1, done);
+
+        //make sure view updates
+        adapter.notifyDataSetChanged();
 
         //testing
         Log.d("editing", cb.isChecked() + " " + done.mChecked);
