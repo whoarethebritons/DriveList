@@ -9,6 +9,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
@@ -20,26 +21,16 @@ import java.util.ArrayList;
 public class NewList extends ActionBarActivity {
     private class ViewHolder {
         private EditText mText;
+        private ViewSwitcher mViewSwitcher;
         private CheckBox mCheckBox;
         private Button mButton;
     }
     private class IndexHolder {
         private int listIndex;
     }
-    private class Separator {
-        private Button mButton;
-        public Separator(Context c) {
-            mButton = new Button(c);
-            mButton.setText("Add Item");
-        }
-        public View getButton() {
-            return mButton;
-        }
-    }
 
     ArrayList taskArray = new ArrayList();
     ArrayAdapter adapter;
-    Separator add;
     int separatorPosition;
 
     @Override
@@ -47,32 +38,64 @@ public class NewList extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         //for testing
         for(int i = 0; i< 20; i++) {
-            TaskItem newItem = new TaskItem(false, "New Item" + i);
+            TaskItem newItem = new TaskItem(false, "New Item" + i, false);
             taskArray.add(newItem);
         }
-        add = new Separator(this);
-        add.mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addItem(v);
-            }
-        });
-        separatorPosition = 20;
-        //taskArray.add(add);
-        //separatorPosition = taskArray.indexOf(add);
-        //System.out.println(separatorPosition);
+        //later set separator position to the one with a button
+        separatorPosition = 19;
+        ((TaskItem)taskArray.get(separatorPosition)).mViewSwitch = true;
+
         LinearLayout listLayout = (LinearLayout) View.inflate(this, R.layout.activity_new_list, null);
         ListView lv = (ListView) listLayout.findViewById(android.R.id.list);
+        lv.setItemsCanFocus(true);
+
+
         adapter= new TaskAdapter(this,
                 R.layout.check_list, R.id.nameView, taskArray);
         lv.setAdapter(adapter);
+        lv.setOnFocusChangeListener(new AdapterView.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    ViewGroup vg = (ViewGroup) v.getParentForAccessibility();
+                    //vg.findFocus()
+                    //v.focus
+                    View vgFocusedChild = vg.getFocusedChild();
+                    Log.d("editing", "row has focus " + vgFocusedChild.toString());
+//
+                    vg.requestChildFocus(vgFocusedChild, v);
+//                    EditText et = (EditText) vgFocusedChild;
+//                    et.performClick();
+                    //et.beginBatchEdit();
+                    //vgFocusedChild.requestFocus();
+
+                    //v.clearFocus();
+                }
+            }
+        });
+
+        /*lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ViewGroup vg = (ViewGroup) view.getParentForAccessibility();
+                //vg.findFocus()
+
+                View vgFocusedChild = vg.getFocusedChild();
+                Log.d("focus", vgFocusedChild.toString());
+                vg.requestChildFocus(vgFocusedChild, view);
+                //InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                //imm.showSoftInput(vgFocusedChild, InputMethodManager.SHOW_IMPLICIT);
+
+                //EditText et = v.getFocusedChild();
+                //v.getFocusables()
+            }
+        });*/
+
         setContentView(listLayout);
 
     }
 
     public class TaskAdapter extends ArrayAdapter {
-
-
         public ArrayList mAdapt;
         ArrayAdapter self;
         ViewHolder mHolder;
@@ -91,69 +114,131 @@ public class NewList extends ActionBarActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View v = convertView;
-            Object mMoving;
+            TaskItem moving;
 
             if (v == null) {
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 v = inflater.inflate(R.layout.check_list, null);
             }
+
+            //holds the view
             mHolder = new ViewHolder();
+            //holds the position of the item in the array
+            //basically the true position it should be at
             mIndex = new IndexHolder();
 
+            //moving is the item at whatever position it is on the screen
+            moving = (TaskItem) self.getItem(position);
+            //find the item's location in the array
+            mIndex.listIndex = taskArray.indexOf(moving);
+            Log.d("position", "index: " + mIndex.listIndex);
 
-            mMoving = self.getItem(position);
-            mIndex.listIndex = taskArray.indexOf(mMoving);
-            System.out.println(mIndex.listIndex);
 
-            /*if(mIndex.listIndex == separatorPosition) {
-                Separator buttonHolder = ((Separator) mMoving);//.getButton();
-                Log.i("button", "I think I'm at " + mIndex.listIndex);
-                //buttonHolder.setTag(mIndex);
-                v = buttonHolder.getButton();
-                v.setTag(buttonHolder);
+            mHolder.mText = (EditText) v.findViewById(R.id.nameView);
+            mHolder.mCheckBox = (CheckBox) v.findViewById(R.id.checkBox);
+            mHolder.mViewSwitcher = (ViewSwitcher) v.findViewById(R.id.viewSwitcher);
+            mHolder.mButton = (Button) v.findViewById(R.id.imageButton);
+
+            if (mHolder.mText == null){// && mHolder.mCheckBox == null) {
+                mHolder.mText = new EditText(getContext());
+                Log.d("editing", "there we go");
+                mHolder.mCheckBox = new CheckBox(getContext());
+                mHolder.mButton = new Button((getContext()));
+                mHolder.mViewSwitcher = new ViewSwitcher(getContext());
             }
-            else {*/
-                TaskItem moving = (TaskItem) mMoving;
-                mHolder.mText = (EditText) v.findViewById(R.id.nameView);
-                mHolder.mCheckBox = (CheckBox) v.findViewById(R.id.checkBox);
-                mHolder.mButton = (Button) v.findViewById(R.id.imageButton);
-                if (mHolder.mText == null && mHolder.mCheckBox == null) {
-                    mHolder.mText = new EditText(getContext());
-                    Log.d("editing", "there we go");
-                    mHolder.mCheckBox = new CheckBox(getContext());
-                    mHolder.mButton = new Button((getContext()));
+            //editor listener for edit text
+            //mHolder.mText.setOnEditorActionListener(editing);
+
+            //makes sure it has the right content
+            mHolder.mText.setText(moving.getmContent());
+            //makes sure it knows what position it is supposed to be at
+            mHolder.mText.setTag(mIndex);
+            //mHolder.setOnFocusChangeListener
+            //focus listener for edit text
+            mHolder.mText.setOnFocusChangeListener(focusIng);
+            //v.setOnFocusChangeListener(rowListener);
+            //System.out.println(v.toString());
+            //mHolder.mText.setOnClickListener(clickListener);
+
+            //we need to update adapter once we finish with editing
+
+            //debug statements
+            if(mHolder.mText.getOnFocusChangeListener() == focusIng) {
+                Log.d("editing", "successfully added focus listener");
+            }
+            //Log.d("editing", "added listener");
+
+            //Log.d("editing", mHolder.toString());
+            //end debug statements
+
+            //view switcher has a copy of real index
+            //button does not
+            mHolder.mViewSwitcher.setTag(mIndex);
+            Log.i("button", mIndex.listIndex + " " + moving.mViewSwitch);
+            if(moving.mViewSwitch && mIndex.listIndex == separatorPosition) {
+                if(mHolder.mViewSwitcher.getCurrentView() != mHolder.mButton) {
+                    Log.i("button", "index " + mIndex.listIndex);
+                    mHolder.mViewSwitcher.showNext();
                 }
-                mHolder.mText.setOnEditorActionListener(editing);
-                mHolder.mText.setText(moving.getmContent());
-                mHolder.mText.setTag(mIndex);
+            }
+            else if(mHolder.mViewSwitcher.getCurrentView() == mHolder.mButton){
+                mHolder.mViewSwitcher.showPrevious();
+            }
+            mHolder.mCheckBox.setChecked(moving.mChecked);
+            mHolder.mCheckBox.setTag(mIndex);
+            /*if (mIndex.listIndex == separatorPosition) {
+                mHolder.mViewSwitcher.showNext();
+                //moving.viewSwitch = true;
+                Log.i("button", "should be visible on bottom element");
+            }*/
 
-
-                mHolder.mText.setOnFocusChangeListener(focusIng);
-
-                //we need to update adapter once we finish with editing
-
-                if (mHolder.mText.getOnFocusChangeListener() == focusIng) {
-                    Log.d("editing", "successfully added focus listener");
-                }
-                Log.d("editing", "added listener");
-
-                Log.d("editing", mHolder.toString());
-
-                mHolder.mCheckBox.setChecked(moving.mChecked);
-                mHolder.mCheckBox.setTag(mIndex);
-                mHolder.mButton.setTag(mIndex);
-                v.setTag(mHolder);
-            //}
+            v.setTag(mHolder);
             return v;
         }
-
+        private EditText.OnClickListener clickListener = new EditText.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println(v.toString());
+                EditText et = (EditText) v;
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                //imm.restartInput(v);
+                //imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
+                et.requestFocus();
+                Log.d("editing", "clicked");
+                //editItem(v);
+            }
+        };
         private EditText.OnFocusChangeListener focusIng = new EditText.OnFocusChangeListener() {
 
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+                EditText et = (EditText) v;
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.restartInput(et);
+                //imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
                 if(!hasFocus) {
-                    Log.d("editing", "Focus Change Listener for : " + ((EditText) v).getText().toString());
+                    //when I lose focus, commit my edit
+                    Log.d("editing", "Focus Change Listener for : " + et.getText().toString());
+                    //imm.restartInput(et);
                     editItem(v);
+                }
+            }
+        };
+        private View.OnFocusChangeListener rowListener = new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                //EditText et = (EditText) v.getFocusedChild();
+                //v.getFocusables()
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                //imm.restartInput(v);
+                ViewGroup vg = (ViewGroup) v.getParentForAccessibility();
+                //vg.findFocus()
+                View vgFocusedChild = vg.getFocusedChild();
+                Log.d("editing", vgFocusedChild.toString());
+                imm.showSoftInput(vgFocusedChild, InputMethodManager.SHOW_IMPLICIT);
+                if(!hasFocus) {
+                    Log.d("editing", "and you succeed?");
+                    editItem(vgFocusedChild);
                 }
             }
         };
@@ -164,6 +249,9 @@ public class NewList extends ActionBarActivity {
             Log.d("editing", "I am editing!!!!");
 
             EditText et = (EditText) v;
+            //et.requestFocus();
+            //InputMethodManager inputManager = (InputMethodManager)getContext().getSystemService(INPUT_METHOD_SERVICE);
+            //inputManager.restartInput(et);
             //holds index in taskArray
             IndexHolder vh = (IndexHolder) et.getTag();
             //testing
@@ -193,10 +281,6 @@ public class NewList extends ActionBarActivity {
                 if ((actionId == EditorInfo.IME_ACTION_NEXT) ||
                         (event.getAction() == KeyEvent.ACTION_DOWN)) {
                     editItem(v);
-
-                    /*for(int j=0; j < taskArray.size(); j++) {
-                        TaskItem m = (TaskItem)taskArray.get(j);
-                    }*/
                     return true;
                 } else {
                     Log.d("editing", "and you fail");
@@ -235,7 +319,6 @@ public class NewList extends ActionBarActivity {
             //StringWriter sw = new StringWriter();
             try {
                 FileOutputStream fos = openFileOutput("example", Context.MODE_PRIVATE);
-
                 serializer.write(t, fos);
                 readFile("example");
             }catch (FileNotFoundException e) {
@@ -264,29 +347,45 @@ public class NewList extends ActionBarActivity {
     }
 
     public void addItem(View view) {
-        ViewSwitcher vs  = (ViewSwitcher) findViewById(R.id.viewSwitcher);
-        taskArray.add(separatorPosition, (new TaskItem(false, "New Item")));
+        //get the view switcher so you can get the true index
+        ViewSwitcher vs  = (ViewSwitcher)  view.getParent();
+        IndexHolder vh = (IndexHolder) vs.getTag();
+        //remove the button
+        ((TaskItem)taskArray.get(vh.listIndex)).mViewSwitch = false;
+
         separatorPosition++;
+        taskArray.add(separatorPosition, (new TaskItem(false, "New Item",true)));
         System.out.println(separatorPosition);
-        vs.showNext();
+        //I switched positions of the things
+        vs.showPrevious();
+        //vs.showNext();
         adapter.notifyDataSetChanged();
     }
 
     public void onCheckBoxClicked(View v) {
+        ViewSwitcher vs = (ViewSwitcher) v.getParent();
         CheckBox cb = (CheckBox) v;
-        IndexHolder vh = (IndexHolder) v.getTag();
-        TaskItem done = (TaskItem)taskArray.get(vh.listIndex);
-        done.setmChecked(cb.isChecked());
-
+        IndexHolder vh = (IndexHolder) vs.getTag();
+        TaskItem checking = (TaskItem)taskArray.get(vh.listIndex);
+        checking.setmChecked(cb.isChecked());
         //move to bottom
-        taskArray.remove(done);
-        //moves to underneath separator
-        taskArray.add(separatorPosition + 1, done);
-
+        taskArray.remove(checking);
+        if(checking.mChecked) {
+            //moves to underneath separator
+            taskArray.add(separatorPosition, checking);
+            cb.setTag(separatorPosition);
+            separatorPosition--;
+        }
+        else {
+            //move to above separator
+            taskArray.add(separatorPosition, checking);
+            cb.setTag(separatorPosition);
+            separatorPosition++;
+        }
         //make sure view updates
         adapter.notifyDataSetChanged();
 
         //testing
-        Log.d("editing", cb.isChecked() + " " + done.mChecked);
+        Log.d("editing", cb.isChecked() + " " + checking.mChecked);
     }
 }
