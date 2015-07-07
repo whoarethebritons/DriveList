@@ -1,5 +1,6 @@
 package com.gamma.drivelist.app;
 
+import android.app.ActionBar;
 import android.app.ListActivity;
 import android.content.Context;
 import android.support.v7.app.ActionBarActivity;
@@ -18,7 +19,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 
-public class NewList extends ActionBarActivity {
+public class NewList extends ListActivity {
     private class ViewHolder {
         private EditText mText;
         private ViewSwitcher mViewSwitcher;
@@ -53,44 +54,6 @@ public class NewList extends ActionBarActivity {
         adapter= new TaskAdapter(this,
                 R.layout.check_list, R.id.nameView, taskArray);
         lv.setAdapter(adapter);
-        lv.setOnFocusChangeListener(new AdapterView.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    ViewGroup vg = (ViewGroup) v.getParentForAccessibility();
-                    //vg.findFocus()
-                    //v.focus
-                    View vgFocusedChild = vg.getFocusedChild();
-                    Log.d("editing", "row has focus " + vgFocusedChild.toString());
-//
-                    vg.requestChildFocus(vgFocusedChild, v);
-//                    EditText et = (EditText) vgFocusedChild;
-//                    et.performClick();
-                    //et.beginBatchEdit();
-                    //vgFocusedChild.requestFocus();
-
-                    //v.clearFocus();
-                }
-            }
-        });
-
-        /*lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ViewGroup vg = (ViewGroup) view.getParentForAccessibility();
-                //vg.findFocus()
-
-                View vgFocusedChild = vg.getFocusedChild();
-                Log.d("focus", vgFocusedChild.toString());
-                vg.requestChildFocus(vgFocusedChild, view);
-                //InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                //imm.showSoftInput(vgFocusedChild, InputMethodManager.SHOW_IMPLICIT);
-
-                //EditText et = v.getFocusedChild();
-                //v.getFocusables()
-            }
-        });*/
-
         setContentView(listLayout);
 
     }
@@ -147,18 +110,14 @@ public class NewList extends ActionBarActivity {
                 mHolder.mViewSwitcher = new ViewSwitcher(getContext());
             }
             //editor listener for edit text
-            //mHolder.mText.setOnEditorActionListener(editing);
+            mHolder.mText.setOnEditorActionListener(editing);
 
             //makes sure it has the right content
             mHolder.mText.setText(moving.getmContent());
             //makes sure it knows what position it is supposed to be at
             mHolder.mText.setTag(mIndex);
-            //mHolder.setOnFocusChangeListener
             //focus listener for edit text
             mHolder.mText.setOnFocusChangeListener(focusIng);
-            //v.setOnFocusChangeListener(rowListener);
-            //System.out.println(v.toString());
-            //mHolder.mText.setOnClickListener(clickListener);
 
             //we need to update adapter once we finish with editing
 
@@ -166,9 +125,6 @@ public class NewList extends ActionBarActivity {
             if(mHolder.mText.getOnFocusChangeListener() == focusIng) {
                 Log.d("editing", "successfully added focus listener");
             }
-            //Log.d("editing", "added listener");
-
-            //Log.d("editing", mHolder.toString());
             //end debug statements
 
             //view switcher has a copy of real index
@@ -186,59 +142,16 @@ public class NewList extends ActionBarActivity {
             }
             mHolder.mCheckBox.setChecked(moving.mChecked);
             mHolder.mCheckBox.setTag(mIndex);
-            /*if (mIndex.listIndex == separatorPosition) {
-                mHolder.mViewSwitcher.showNext();
-                //moving.viewSwitch = true;
-                Log.i("button", "should be visible on bottom element");
-            }*/
-
             v.setTag(mHolder);
             return v;
         }
-        private EditText.OnClickListener clickListener = new EditText.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                System.out.println(v.toString());
-                EditText et = (EditText) v;
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                //imm.restartInput(v);
-                //imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
-                et.requestFocus();
-                Log.d("editing", "clicked");
-                //editItem(v);
-            }
-        };
         private EditText.OnFocusChangeListener focusIng = new EditText.OnFocusChangeListener() {
 
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                EditText et = (EditText) v;
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.restartInput(et);
-                //imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
                 if(!hasFocus) {
-                    //when I lose focus, commit my edit
-                    Log.d("editing", "Focus Change Listener for : " + et.getText().toString());
-                    //imm.restartInput(et);
+                    Log.d("editing", "Focus Change Listener for : " + ((EditText) v).getText().toString());
                     editItem(v);
-                }
-            }
-        };
-        private View.OnFocusChangeListener rowListener = new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                //EditText et = (EditText) v.getFocusedChild();
-                //v.getFocusables()
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                //imm.restartInput(v);
-                ViewGroup vg = (ViewGroup) v.getParentForAccessibility();
-                //vg.findFocus()
-                View vgFocusedChild = vg.getFocusedChild();
-                Log.d("editing", vgFocusedChild.toString());
-                imm.showSoftInput(vgFocusedChild, InputMethodManager.SHOW_IMPLICIT);
-                if(!hasFocus) {
-                    Log.d("editing", "and you succeed?");
-                    editItem(vgFocusedChild);
                 }
             }
         };
@@ -249,9 +162,6 @@ public class NewList extends ActionBarActivity {
             Log.d("editing", "I am editing!!!!");
 
             EditText et = (EditText) v;
-            //et.requestFocus();
-            //InputMethodManager inputManager = (InputMethodManager)getContext().getSystemService(INPUT_METHOD_SERVICE);
-            //inputManager.restartInput(et);
             //holds index in taskArray
             IndexHolder vh = (IndexHolder) et.getTag();
             //testing
@@ -262,10 +172,7 @@ public class NewList extends ActionBarActivity {
             TaskItem i = (TaskItem) getInArr(arrIndex);
             //make sure they are not the same
             if(! et.getText().toString().equals(i.getmContent())) {
-                //et.setText(v.getText());
-                //testing
-                Log.d("editing", v.getText().toString());
-                //sets new val
+                //sets new value
                 i.setmContent(v.getText().toString());
 
                 //should be end of testing
@@ -295,8 +202,11 @@ public class NewList extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+
         getMenuInflater().inflate(R.menu.menu_new_list, menu);
-        return true;
+        ActionBar actionBar = getActionBar();
+        actionBar.show();
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

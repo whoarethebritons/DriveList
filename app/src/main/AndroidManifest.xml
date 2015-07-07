@@ -20,6 +20,7 @@
         <activity
             android:name=".NewList"
             android:label="@string/title_activity_new_list"
+            android:theme="@android:style/Theme.DeviceDefault"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
