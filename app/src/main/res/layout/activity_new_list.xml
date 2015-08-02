@@ -5,10 +5,14 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:windowSoftInputMode="adjustResize"
+              android:descendantFocusability="beforeDescendants"
               android:focusable="false"
               android:layout_height="match_parent">
+    <EditText android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:id="@+id/list_title"/>
     <ListView android:layout_width="wrap_content"
-              android:layout_height="513dp"
+              android:layout_height="481dp"
               android:id="@android:id/list">
     </ListView>
 </LinearLayout>

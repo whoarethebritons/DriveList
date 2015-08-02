@@ -1,15 +1,6 @@
 package com.gamma.drivelist.app;
 
-import android.content.Context;
-import android.util.Xml;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import org.simpleframework.xml.Attribute;
-import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
-
-import java.io.StringWriter;
 
 /**
  * Created by eden on 5/6/15.
@@ -17,9 +8,9 @@ import java.io.StringWriter;
 @Root
 public class TaskItem {
     boolean mViewSwitch;
-    @Element
+    //@Element
     String mContent;
-    @Attribute
+    //@Attribute
     boolean mChecked;
 
     TaskItem(boolean checked, String content, boolean s) {

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+
+    <CheckBox
+            android:layout_height="wrap_content"
+            android:layout_width="?android:attr/listPreferredItemHeight"
+            android:text=""
+            android:scaleX="0.70"
+            android:scaleY="0.70"
+            android:id="@+id/checkBox"/>
+    <TextView
+            android:layout_width ="fill_parent"
+            android:layout_toRightOf="@+id/checkBox"
+            android:layout_height="wrap_content"
+            android:id = "@+id/gridText"
+            android:background="@null"
+            android:scrollHorizontally="false"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+</RelativeLayout>

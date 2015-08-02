@@ -7,6 +7,5 @@
           android:orderInCategory="100"
           app:showAsAction="never"/>
     <item android:id="@+id/action_save"
-          android:onClick="commitChanges"
           android:title="Save"/>
 </menu>
