@@ -3,15 +3,20 @@
                 xmlns:custom="http://schemas.android.com/apk/res-auto"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
+                android:descendantFocusability="blocksDescendants"
+                android:focusable="false"
+                android:clickable="false"
                 android:layout_height="wrap_content"
                 android:scrollbars="none">
 
     <CheckBox
             android:layout_height="wrap_content"
-            android:layout_width="?android:attr/listPreferredItemHeight"
+            android:layout_width="wrap_content"
             android:text=""
             android:scaleX="0.70"
             android:scaleY="0.70"
+            android:clickable="false"
+            android:focusable="false"
             android:id="@+id/checkBox"/>
     <TextView
             android:layout_width ="fill_parent"

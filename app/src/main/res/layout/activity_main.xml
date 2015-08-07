@@ -15,6 +15,8 @@
               android:verticalSpacing="10dp"
               android:horizontalSpacing="10dp"
               android:stretchMode="columnWidth"
+              android:descendantFocusability="blocksDescendants"
+              android:addStatesFromChildren="true"
               android:fillViewport="true"
               android:gravity="center" tools:listitem="@layout/layout_list"/>
     <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content"

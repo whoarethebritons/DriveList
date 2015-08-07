@@ -5,10 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 
 import java.util.ArrayList;
 
@@ -20,7 +17,9 @@ public class GridAdapter extends BaseAdapter{
 
     public class ListViewHolder {
         private TextView mTextView;
+        private CheckBox mCheckBox;
         private ListView mListContainer;
+        int mListID;
     }
     Context mContext;
     public ArrayList mArray;
@@ -34,7 +33,6 @@ public class GridAdapter extends BaseAdapter{
         self = this;
         Log.v(TAG, "grid adapter created");
     }
-
     @Override
     public int getCount() {
         return mArray.size();
@@ -48,6 +46,17 @@ public class GridAdapter extends BaseAdapter{
     @Override
     public long getItemId(int position) {
         return 0;
+    }
+    @Override
+     public boolean areAllItemsEnabled()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled(int arg0)
+    {
+        return true;
     }
 
     @Override
@@ -74,18 +83,35 @@ public class GridAdapter extends BaseAdapter{
         //get title and list views
         mHolder.mListContainer = (ListView) row.findViewById(android.R.id.list);
         mHolder.mTextView = (TextView) row.findViewById(R.id.gridItemTitle);
+        mHolder.mCheckBox = (CheckBox) row.findViewById(R.id.checkBox);
         mHolder.mTextView.setText(temp.mTitle);
+        mHolder.mListID = temp.listID;
+        mHolder.mListContainer.setItemsCanFocus(false);
+        AdapterView.OnItemClickListener onClickListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.v("clicked", view.toString());
+                Log.v("parent of clicked", parent.getOnItemClickListener().toString());
+            }
+        };
+        mHolder.mListContainer.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                Log.v("focus change list view", hasFocus + v.toString());
+            }
+        });
+        mHolder.mListContainer.setOnItemClickListener(onClickListener);
 
         //if the item isn't null, make the adapter and set it
         if(temp!=null) {
-            ArrayAdapter adapter = new ArrayAdapter(mContext, R.layout.grid_list, R.id.gridText, temp.mTaskItems);
+            ArrayAdapter adapter = new ArrayAdapter(mContext, R.layout.grid_list, R.id.checkBox, temp.mTaskItems);
             mHolder.mListContainer.setAdapter(adapter);
 
             /*debugging*/
-            Log.v(TAG, "making inner adapter");
+            /*Log.v(TAG, "making inner adapter");
             Log.v(TAG, adapter.isEmpty() + "\n" + adapter.getItem(0) + "\n" +
                     adapter.getItemViewType(5));
-            Log.v(TAG, row.toString() + "\n" + mHolder.mListContainer.toString());
+            Log.v(TAG, row.toString() + "\n" + mHolder.mListContainer.toString());*/
         }
         row.setTag(mHolder);
         return row;
