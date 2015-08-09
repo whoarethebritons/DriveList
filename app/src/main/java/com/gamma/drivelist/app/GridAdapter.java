@@ -1,19 +1,27 @@
 package com.gamma.drivelist.app;
 
 import android.content.Context;
-import android.util.Log;
-import android.view.LayoutInflater;
+import android.database.Cursor;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.*;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 
 /**
  * Created by eden on 7/7/15.
  */
-public class GridAdapter extends BaseAdapter{
+public class GridAdapter extends SimpleCursorAdapter{
     public String TAG = "gridadapt";
+
+    public GridAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
+        super(context, layout, c, from, to);
+    }
+
+    public GridAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags) {
+        super(context, layout, c, from, to, flags);
+    }
 
     public class ListViewHolder {
         private TextView mTextView;
@@ -22,23 +30,10 @@ public class GridAdapter extends BaseAdapter{
         int mListID;
     }
     Context mContext;
-    public ArrayList mArray;
     BaseAdapter self;
     ListViewHolder mHolder;
 
-    public GridAdapter(Context context, ArrayList objects) {
-        super();
-        mArray = objects;
-        mContext = context;
-        self = this;
-        Log.v(TAG, "grid adapter created");
-    }
-    @Override
-    public int getCount() {
-        return mArray.size();
-    }
-
-    @Override
+    /*@Override
     public Object getItem(int position) {
         return mArray.get(position);
     }
@@ -47,8 +42,15 @@ public class GridAdapter extends BaseAdapter{
     public long getItemId(int position) {
         return 0;
     }
+
+
     @Override
-     public boolean areAllItemsEnabled()
+    public void notifyDataSetChanged() {
+        Log.v(TAG, "data set changed");
+        super.notifyDataSetChanged();
+    }*/
+    @Override
+    public boolean areAllItemsEnabled()
     {
         return true;
     }
@@ -58,14 +60,23 @@ public class GridAdapter extends BaseAdapter{
     {
         return true;
     }
-
     @Override
-    public void notifyDataSetChanged() {
-        Log.v(TAG, "data set changed");
-        super.notifyDataSetChanged();
+    public void bindView(View view, Context context, Cursor cursor) {
+        if(view instanceof TextView) {
+            super.bindView(view, context, cursor);
+        }
+        else {
+            NonScrollable ns = (NonScrollable) view.findViewById(android.R.id.list);
+            Gson g = new Gson();
+            ArrayList<TaskItem> al = g.fromJson(cursor.getString(MainActivity.COLUMN_ARRAYLIST),
+                    new TypeToken<ArrayList<TaskItem>>() {}.getType());
+            ListAdapter listAdapter = new com.gamma.drivelist.app.ListAdapter(context,
+                    R.layout.grid_list, R.id.checkBox, al);
+            ns.setAdapter(listAdapter);
+        }
     }
 
-    @Override
+    /*@Override
     public View getView(int position, View convertView, ViewGroup parent) {
         //get the item corresponding to your position
         View row =convertView;
@@ -105,15 +116,15 @@ public class GridAdapter extends BaseAdapter{
         //if the item isn't null, make the adapter and set it
         if(temp!=null) {
             ArrayAdapter adapter = new ArrayAdapter(mContext, R.layout.grid_list, R.id.checkBox, temp.mTaskItems);
-            mHolder.mListContainer.setAdapter(adapter);
+            //mHolder.mListContainer.setAdapter(adapter);
 
-            /*debugging*/
-            /*Log.v(TAG, "making inner adapter");
+            *//*debugging*//*
+            Log.v(TAG, "making inner adapter");
             Log.v(TAG, adapter.isEmpty() + "\n" + adapter.getItem(0) + "\n" +
                     adapter.getItemViewType(5));
-            Log.v(TAG, row.toString() + "\n" + mHolder.mListContainer.toString());*/
+            Log.v(TAG, row.toString() + "\n" + mHolder.mListContainer.toString());
         }
         row.setTag(mHolder);
         return row;
-    }
+    }*/
 }

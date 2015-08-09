@@ -12,8 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import android.widget.SimpleCursorAdapter;
 
 import java.util.ArrayList;
 
@@ -24,11 +23,12 @@ public class MainActivity extends ActionBarActivity {
         ArrayList<TaskItem> mTaskItems;
         int listID;
     }
-    final static String NEW_KEY = "new_key", LIST_ID = "list_id";
-    final static int NEW_LIST = 0, UPDATE_LIST=1;
+    final static String NEW_KEY = "new_key", LIST_ID = "list_id", LIST_DATA="list_data";
+    final static int NEW_LIST = 0, UPDATE_LIST=1, COLUMN_ARRAYLIST = 2, COLUMN_TITLE=1, COLUMN_ID=0;
     static int ID;
     ListDatabase mDbHelper;
     GridAdapter gridAdapter;
+    Cursor gridCursor;
     GridView gv;
     ArrayList viewArrayList = new ArrayList();
     @Override
@@ -36,44 +36,35 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //gridView initialized and "adapted"
-        gridAdapter = new GridAdapter(this, viewArrayList);
+        mDbHelper = new ListDatabase(this);
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        gridCursor = db.rawQuery("SELECT * FROM listtable", null);
+
+        String[] displayFields = new String[]{ListDatabase.FeedEntry.COLUMN_NAME_TITLE,
+                ListDatabase.FeedEntry.COLUMN_NAME_LIST};
+
+        int[] displayText = new int[] {R.id.gridItemTitle, android.R.id.list};
+        SimpleCursorAdapter cursorAdapter = new GridAdapter(this, R.layout.layout_list, gridCursor, displayFields,
+                displayText);
+
         gv = (GridView) findViewById(R.id.gridView);
-        gv.setAdapter(gridAdapter);
+        gv.setAdapter(cursorAdapter);
 
 
         gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Log.v("grid clicked", v.toString());
-                /*GridAdapter.ListViewHolder lvh = (GridAdapter.ListViewHolder) v.getTag();
-                SQLiteDatabase db = mDbHelper.getReadableDatabase();
-                Cursor c = db.rawQuery("SELECT * FROM listtable WHERE _id=" + lvh.mListID, null);
-                if (c.moveToFirst()) {
-                    Log.v("old list", c.getString(2));
+                if (gridCursor.moveToPosition(position)) {
+                    Log.v("old list", gridCursor.getString(COLUMN_ARRAYLIST));
                     Intent i = new Intent(getApplicationContext(), NewList.class);
                     i.putExtra(NEW_KEY, false);
-                    i.putExtra(LIST_ID, c.getString(2));
+                    Log.v("putting: ", gridCursor.getString(COLUMN_ID));
+                    i.putExtra(LIST_ID, gridCursor.getString(COLUMN_ID));
+                    i.putExtra(LIST_DATA, gridCursor.getString(COLUMN_ARRAYLIST));
                     startActivityForResult(i, UPDATE_LIST);
-                }*/
+                }
             }
         });
-
-        //initialize database and get information
-        mDbHelper = new ListDatabase(this);
-        readData();
-        Log.v("main", gv.hasFocusable() + " " + gv.isFocusable() + " " + gv.isFocused());
-        Log.v("adapter", "count is: " + viewArrayList.size());
-        /*TextView tv = (TextView) findViewById(R.id.gridText);
-        CheckBox cb = (CheckBox) findViewById(R.id.checkBox);
-        NonScrollable ns = (NonScrollable) findViewById(android.R.id.list);
-        View.OnClickListener onClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.v("clicked", v.toString());
-            }
-        };*/
-        //gv.setOnClickListener(onClickListener);
     }
 
     public void listNew(View view) {
@@ -108,50 +99,13 @@ public class MainActivity extends ActionBarActivity {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         db.delete("listtable", null, null);
     }
-    public void readData() {
-        int COLUMN_ARRAYLIST = 2, COLUMN_TITLE=1, COLUMN_ID=0;
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        //selects all lists
-        Cursor c = db.rawQuery("SELECT * FROM listtable", null);
-        int j =0;
-        //goes to first
-        if(c.moveToFirst()) {
-            //loop through all rows
-            do {
-                Gson g = new Gson();
-                listHolder temp = new listHolder();
-                ArrayList<TaskItem> al = g.fromJson(c.getString(COLUMN_ARRAYLIST), new TypeToken<ArrayList<TaskItem>>() {}.getType());
-                temp.mTaskItems = al;
-                temp.mTitle = c.getString(COLUMN_TITLE);
-                temp.listID = c.getInt(COLUMN_ID);
-                Log.v("main", "list id: " + temp.listID);
-                //make sure item is not already in the arraylist
-                if(!viewArrayList.contains(temp)) {
-                    viewArrayList.add(temp);
-                }
-                gridAdapter.notifyDataSetChanged();
-                j++;
-                Log.v("database", "count: " + j);
-            }while (c.moveToNext());
-        }
-
-        /*debugging*/
-        if(c.moveToFirst()) {
-            for (int i = 0; i < c.getColumnCount(); i ++) {
-                Log.v("database",c.getString(i));
-            }
-        }
-        for (int i = 0; i < c.getColumnNames().length; i++) {
-            Log.v("database", c.getColumnNames()[i]);
-        }
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.v("main", "request code: " + requestCode + " result code: " + resultCode);
         String json = data.getStringExtra("JSON_STRING");
         String title = data.getStringExtra("TITLE_STRING");
-        int id = data.getIntExtra("ID_INT", -1);
+        String id = data.getStringExtra("ID_INT");
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues contentValues = new ContentValues();
@@ -168,16 +122,10 @@ public class MainActivity extends ActionBarActivity {
             //super.onActivityResult(requestCode, resultCode, data);
         }
         else if(requestCode == UPDATE_LIST) {
-            long updateRowId = db.update(ListDatabase.FeedEntry.TABLE_NAME, contentValues, "where _id = ?",
-                    new String[] {Integer.toString(id)});
+            Log.v("update", id);
+            long updateRowId = db.update(ListDatabase.FeedEntry.TABLE_NAME, contentValues, "_id = ?",
+                    new String[] {id});
         }
-        readData();
-    }
-
-    public void checkClick(View v) {
-        Log.v("check", v.toString());
-    }
-    public void textClick(View v) {
-        Log.v("check", v.toString());
+        gridCursor.requery();
     }
 }

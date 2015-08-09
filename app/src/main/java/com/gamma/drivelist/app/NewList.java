@@ -21,6 +21,7 @@ public class NewList extends ListActivity {
     ArrayList taskArray = new ArrayList();
     ArrayAdapter adapter;
     EditText title;
+    String id;
     static int separatorPosition;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +38,12 @@ public class NewList extends ListActivity {
 
         if(newList) {
             separatorPosition=0;
-            TaskItem newItem = new TaskItem(false, "Add Item", false);
+            TaskItem newItem = new TaskItem(false, "", false);
             taskArray.add(newItem);
         }
         else {
-            taskArray = tasksFromJson(intent.getStringExtra(MainActivity.LIST_ID));
+            id = intent.getStringExtra(MainActivity.LIST_ID);
+            taskArray = tasksFromJson(intent.getStringExtra(MainActivity.LIST_DATA));
             separatorPosition = taskArray.size() -1;
         }
         Log.v(TAG, "separator position: " + separatorPosition);
@@ -92,13 +94,16 @@ public class NewList extends ListActivity {
         Intent i = new Intent();
         i.putExtra("JSON_STRING", tasksToJson());
         i.putExtra("TITLE_STRING", title.getText().toString());
+        i.putExtra("ID_INT", id);
         setResult(RESULT_OK, i);
         this.finish();
     }
 
     public String tasksToJson() {
         Gson g = new Gson();
-        return g.toJson(taskArray, taskArray.getClass());
+        String ret = g.toJson(taskArray, taskArray.getClass());
+        Log.v("committing: ", ret);
+        return ret;
     }
 
     public ArrayList<TaskItem> tasksFromJson(String s) {
@@ -114,7 +119,7 @@ public class NewList extends ListActivity {
         ((TaskItem)taskArray.get(vh.listIndex)).mViewSwitch = false;
 
         separatorPosition++;
-        taskArray.add(separatorPosition, (new TaskItem(false, "New Item",true)));
+        taskArray.add(separatorPosition, (new TaskItem(false, "",true)));
         System.out.println(separatorPosition);
 
         vs.showPrevious();
