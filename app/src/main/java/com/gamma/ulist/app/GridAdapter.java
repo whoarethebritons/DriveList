@@ -1,4 +1,4 @@
-package com.gamma.drivelist.app;
+package com.gamma.ulist.app;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -70,7 +70,7 @@ public class GridAdapter extends SimpleCursorAdapter{
             Gson g = new Gson();
             ArrayList<TaskItem> al = g.fromJson(cursor.getString(MainActivity.COLUMN_ARRAYLIST),
                     new TypeToken<ArrayList<TaskItem>>() {}.getType());
-            ListAdapter listAdapter = new com.gamma.drivelist.app.ListAdapter(context,
+            ListAdapter listAdapter = new com.gamma.ulist.app.ListAdapter(context,
                     R.layout.grid_list, R.id.checkBox, al);
             ns.setAdapter(listAdapter);
         }

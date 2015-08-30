@@ -1,0 +1,12 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+            android:key="google_account"
+            android:title="@string/pref_title_google"
+            android:summary="@string/pref_title_google"
+            />
+    <Preference
+            android:key="git_account"
+            android:title="@string/pref_title_git"
+            android:summary="@string/pref_title_git"
+            />
+</PreferenceScreen>

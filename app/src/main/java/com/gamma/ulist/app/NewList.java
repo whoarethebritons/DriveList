@@ -1,4 +1,4 @@
-package com.gamma.drivelist.app;
+package com.gamma.ulist.app;
 
 import android.app.ActionBar;
 import android.app.ListActivity;
@@ -36,21 +36,21 @@ public class NewList extends ListActivity {
         Intent intent = getIntent();
         boolean newList = intent.getBooleanExtra(MainActivity.NEW_KEY, false);
 
+        LinearLayout listLayout = (LinearLayout) View.inflate(this, R.layout.activity_new_list, null);
+        EditText editText = (EditText) listLayout.findViewById(R.id.list_title);
         if(newList) {
             separatorPosition=0;
-            TaskItem newItem = new TaskItem(false, "", false);
+            TaskItem newItem = new TaskItem(false, "");
             taskArray.add(newItem);
         }
         else {
             id = intent.getStringExtra(MainActivity.LIST_ID);
             taskArray = tasksFromJson(intent.getStringExtra(MainActivity.LIST_DATA));
+            editText.setText(intent.getStringExtra(MainActivity.LIST_TITLE));
             separatorPosition = taskArray.size() -1;
         }
         Log.v(TAG, "separator position: " + separatorPosition);
 
-        ((TaskItem)taskArray.get(separatorPosition)).mViewSwitch = true;
-
-        LinearLayout listLayout = (LinearLayout) View.inflate(this, R.layout.activity_new_list, null);
         ListView lv = (ListView) listLayout.findViewById(android.R.id.list);
         lv.setItemsCanFocus(true);
 
@@ -93,7 +93,13 @@ public class NewList extends ListActivity {
         System.out.println("hey");
         Intent i = new Intent();
         i.putExtra("JSON_STRING", tasksToJson());
-        i.putExtra("TITLE_STRING", title.getText().toString());
+        if(title.getText().toString().equals("")) {
+            String n = null;
+            i.putExtra("TITLE_STRING", n);
+        }else {
+            i.putExtra("TITLE_STRING", title.getText().toString());
+        }
+        i.putExtra("ID_INT", id);
         i.putExtra("ID_INT", id);
         setResult(RESULT_OK, i);
         this.finish();
@@ -116,10 +122,9 @@ public class NewList extends ListActivity {
         ViewSwitcher vs  = (ViewSwitcher)  view.getParent();
         TaskAdapter.IndexHolder vh = (TaskAdapter.IndexHolder) vs.getTag();
         //remove the button
-        ((TaskItem)taskArray.get(vh.listIndex)).mViewSwitch = false;
 
         separatorPosition++;
-        taskArray.add(separatorPosition, (new TaskItem(false, "",true)));
+        taskArray.add(separatorPosition, (new TaskItem(false, "")));
         System.out.println(separatorPosition);
 
         vs.showPrevious();
@@ -131,10 +136,10 @@ public class NewList extends ListActivity {
         CheckBox cb = (CheckBox) v;
         TaskAdapter.IndexHolder vh = (TaskAdapter.IndexHolder) vs.getTag();
         TaskItem checking = (TaskItem)taskArray.get(vh.listIndex);
-        checking.setmChecked(cb.isChecked());
+        checking.setmState(cb.isChecked());
         //move to bottom
         taskArray.remove(checking);
-        if(checking.mChecked) {
+        if(checking.mState) {
             //moves to underneath separator
             taskArray.add(separatorPosition, checking);
             cb.setTag(separatorPosition);
@@ -150,7 +155,7 @@ public class NewList extends ListActivity {
         adapter.notifyDataSetChanged();
 
         //testing
-        Log.d("editing", cb.isChecked() + " " + checking.mChecked);
+        Log.d("editing", cb.isChecked() + " " + checking.mState);
     }
     public void onBackPressed() {
         commitChanges();

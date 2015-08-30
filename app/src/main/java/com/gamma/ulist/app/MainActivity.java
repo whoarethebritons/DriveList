@@ -1,4 +1,4 @@
-package com.gamma.drivelist.app;
+package com.gamma.ulist.app;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -18,13 +18,8 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends ActionBarActivity {
-    public class listHolder {
-        String mTitle;
-        ArrayList<TaskItem> mTaskItems;
-        int listID;
-    }
-    final static String NEW_KEY = "new_key", LIST_ID = "list_id", LIST_DATA="list_data";
-    final static int NEW_LIST = 0, UPDATE_LIST=1, COLUMN_ARRAYLIST = 2, COLUMN_TITLE=1, COLUMN_ID=0;
+    final static String NEW_KEY = "new_key", LIST_ID = "list_id", LIST_DATA="list_data", LIST_TITLE="list_title";
+    final static int NEW_LIST = 0, UPDATE_LIST=1, SETTINGS = 2, COLUMN_ARRAYLIST = 2, COLUMN_TITLE=1, COLUMN_ID=0;
     static int ID;
     ListDatabase mDbHelper;
     GridAdapter gridAdapter;
@@ -40,11 +35,10 @@ public class MainActivity extends ActionBarActivity {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         gridCursor = db.rawQuery("SELECT * FROM listtable", null);
 
-        String[] displayFields = new String[]{ListDatabase.FeedEntry.COLUMN_NAME_TITLE,
-                ListDatabase.FeedEntry.COLUMN_NAME_LIST};
+        String[] displayFields = new String[]{ListDatabase.FeedEntry.COLUMN_NAME_TITLE};
 
-        int[] displayText = new int[] {R.id.gridItemTitle, android.R.id.list};
-        SimpleCursorAdapter cursorAdapter = new GridAdapter(this, R.layout.layout_list, gridCursor, displayFields,
+        int[] displayText = new int[] {R.id.gridItemTitle};
+        SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this, R.layout.layout_list, gridCursor, displayFields,
                 displayText);
 
         gv = (GridView) findViewById(R.id.gridView);
@@ -61,6 +55,7 @@ public class MainActivity extends ActionBarActivity {
                     Log.v("putting: ", gridCursor.getString(COLUMN_ID));
                     i.putExtra(LIST_ID, gridCursor.getString(COLUMN_ID));
                     i.putExtra(LIST_DATA, gridCursor.getString(COLUMN_ARRAYLIST));
+                    i.putExtra(LIST_TITLE, gridCursor.getString(COLUMN_TITLE));
                     startActivityForResult(i, UPDATE_LIST);
                 }
             }
@@ -90,6 +85,8 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivityForResult(i,SETTINGS,null);
             return true;
         }
 
@@ -102,8 +99,12 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == SETTINGS) {
+            return;
+        }
         Log.v("main", "request code: " + requestCode + " result code: " + resultCode);
         String json = data.getStringExtra("JSON_STRING");
+
         String title = data.getStringExtra("TITLE_STRING");
         String id = data.getStringExtra("ID_INT");
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
@@ -113,12 +114,18 @@ public class MainActivity extends ActionBarActivity {
         contentValues.put(ListDatabase.FeedEntry.COLUMN_NAME_LIST, json);
 
         if(requestCode == NEW_LIST) {
-
             // Insert the new row, returning the primary key value of the new row
             long newRowId = db.insert(
                     ListDatabase.FeedEntry.TABLE_NAME,
                     null,
                     contentValues);
+            Log.v("inserted", "this: " + newRowId);
+            if(title == null) {
+                contentValues.remove(ListDatabase.FeedEntry.COLUMN_NAME_TITLE);
+                contentValues.put(ListDatabase.FeedEntry.COLUMN_NAME_TITLE, "List #" + newRowId);
+                db.update(ListDatabase.FeedEntry.TABLE_NAME, contentValues, "_id = ?",
+                        new String[]{Long.toString(newRowId)});
+            }
             //super.onActivityResult(requestCode, resultCode, data);
         }
         else if(requestCode == UPDATE_LIST) {

@@ -1,4 +1,4 @@
-package com.gamma.drivelist.app;
+package com.gamma.ulist.app;
 
 import android.content.Context;
 import android.util.Log;
@@ -78,7 +78,7 @@ public class TaskAdapter extends ArrayAdapter {
         mHolder.mText.setOnEditorActionListener(editing);
 
         //makes sure it has the right content
-        mHolder.mText.setText(moving.getmContent());
+        mHolder.mText.setText(moving.getmTitle());
         //makes sure it knows what position it is supposed to be at
         mHolder.mText.setTag(mIndex);
         //focus listener for edit text
@@ -95,8 +95,8 @@ public class TaskAdapter extends ArrayAdapter {
         //view switcher has a copy of real index
         //button does not
         mHolder.mViewSwitcher.setTag(mIndex);
-        Log.i("button", mIndex.listIndex + " " + moving.mViewSwitch);
-        if(moving.mViewSwitch && mIndex.listIndex == NewList.separatorPosition) {
+        Log.i("button", "index: " + mIndex.listIndex);
+        if(mIndex.listIndex == NewList.separatorPosition) {
             if(mHolder.mViewSwitcher.getCurrentView() != mHolder.mButton) {
                 Log.i("button", "index " + mIndex.listIndex);
                 mHolder.mViewSwitcher.showNext();
@@ -105,7 +105,7 @@ public class TaskAdapter extends ArrayAdapter {
         else if(mHolder.mViewSwitcher.getCurrentView() == mHolder.mButton){
             mHolder.mViewSwitcher.showPrevious();
         }
-        mHolder.mCheckBox.setChecked(moving.mChecked);
+        mHolder.mCheckBox.setChecked(moving.mState);
         mHolder.mCheckBox.setTag(mIndex);
         v.setTag(mHolder);
         return v;
@@ -136,9 +136,9 @@ public class TaskAdapter extends ArrayAdapter {
         //gets item at index
         TaskItem i = (TaskItem) getInArr(arrIndex);
         //make sure they are not the same
-        if(! et.getText().toString().equals(i.getmContent())) {
+        if(! et.getText().toString().equals(i.getmTitle())) {
             //sets new value
-            i.setmContent(v.getText().toString());
+            i.setmTitle(v.getText().toString());
 
             //should be end of testing
             mAdapt.remove(arrIndex);

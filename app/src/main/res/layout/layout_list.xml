@@ -6,20 +6,23 @@
               android:descendantFocusability="blocksDescendants"
               android:focusable="false"
               android:scrollbars="none"
-              android:background="#000"
+              android:background="@color/colorAccent"
               android:layout_height="wrap_content">
     <TextView android:layout_width="match_parent"
               android:layout_height="wrap_content"
+              android:textAppearance="?android:attr/textAppearanceListItemSmall"
+              android:gravity="center_vertical"
+              android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+              android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+              android:minHeight="?android:attr/listPreferredItemHeightSmall"
               android:focusable="false"
               android:focusableInTouchMode="false"
               android:id="@+id/gridItemTitle"/>
-    <com.gamma.drivelist.app.NonScrollable android:layout_width="wrap_content"
+    <com.gamma.ulist.app.NonScrollable android:layout_width="wrap_content"
               android:layout_height="match_parent"
-                                           android:descendantFocusability="blocksDescendants"
-                                           android:clickable="false"
                                            android:focusable="false"
                                            android:focusableInTouchMode="false"
               android:scrollbars="none"
               android:id="@android:id/list">
-    </com.gamma.drivelist.app.NonScrollable>
+    </com.gamma.ulist.app.NonScrollable>
 </LinearLayout>
